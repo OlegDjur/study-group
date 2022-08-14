@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type TreeNode struct {
 	val   int
@@ -55,62 +58,49 @@ func (t *TreeNode) print() {
 	t.right.print()
 }
 
-// func (t *TreeNode) find(val int) *TreeNode {
-// 	if t == nil {
-// 		return nil
-// 	}
-// 	if val == t.val {
+func (n *TreeNode) replaceNode(parent, replacement *TreeNode) error {
+	if n == nil {
+		return errors.New("replaceNode() not allowed on a nil node")
+	}
 
-// 		tmp := t.delete(t.val)
-// 		fmt.Println(t)
-// 		return tmp
-// 	}
-// 	if val < t.val {
-// 		t.left.find(val)
-// 	} else if val > t.val {
-// 		t.right.find(val)
-// 	}
-// 	return nil
-// }
-
-func (t *TreeNode) Delete(value int) {
-	t.remove(value)
+	if n == parent.left {
+		parent.left = replacement
+		return nil
+	}
+	parent.right = replacement
+	return nil
 }
 
-func (t *TreeNode) remove(val int) *TreeNode {
-	// var temp *TreeNode = nil
-
-	if t.val == val {
+func (t *TreeNode) remove(val int, parent *TreeNode) *TreeNode {
+	if val < t.val {
+		t.left.remove(val, t)
+	} else if val > t.val {
+		t.right.remove(val, t)
+	} else if t.val == val {
 		if t.left == nil && t.right == nil {
-
-			t = nil
-			fmt.Println(t)
-			return t
+			t.replaceNode(parent, nil)
+			return nil
 		} else if t.left != nil && t.right == nil {
-			tmp := t.left
-			t = nil
-			t = tmp
-
+			t.replaceNode(parent, t.left)
+			return nil
 		} else if t.left == nil && t.right != nil {
-			tmp := t.right
-			t = nil
-			t = tmp
-
+			t.replaceNode(parent, t.right)
+			return nil
 		} else {
 			tmp := t.right.min()
-			t = nil
-			t = tmp
+			l := t.left
+			t.replaceNode(parent, tmp)
+			tmp.left = l
+			return nil
 		}
-	} else if val < t.val {
-		t.left.remove(val)
-	} else {
-		t.right.remove(val)
+
 	}
-	return nil
+	return t
 }
 
 func main() {
 	tree := &TreeNode{val: 8}
+
 	tree.insert(4)
 	tree.insert(2)
 	tree.insert(3)
@@ -119,7 +109,7 @@ func main() {
 	tree.insert(7)
 
 	tree.print()
-	tree.Delete(3)
-	fmt.Println(tree.remove(3))
+	tree.remove(4, tree)
+	fmt.Println()
 	tree.print()
 }
